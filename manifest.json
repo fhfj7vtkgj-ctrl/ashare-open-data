@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-13 14:42:54 +0800",
+  "generated_at": "2026-11-13 14:49:08 +0800",
   "files": [
     {
       "file": "data/daily/1991.csv.gz",
@@ -2713,13 +2713,13 @@
     },
     {
       "file": "data/minute/5m/2026-11-13.csv.gz",
-      "rows": 5257,
+      "rows": 5263,
       "range": [
         "2026-11-13 09:35:00",
-        "2026-11-13 14:45:00"
+        "2026-11-13 14:50:00"
       ],
-      "bytes": 105380,
-      "sha256": "c3b0b72da4e58791"
+      "bytes": 105504,
+      "sha256": "299e28647fd215d0"
     },
     {
       "file": "data/minute/1m/2026-11-09.csv.gz",
@@ -2763,13 +2763,13 @@
     },
     {
       "file": "data/minute/1m/2026-11-13.csv.gz",
-      "rows": 8978,
+      "rows": 9005,
       "range": [
         "2026-11-13 09:29:00",
-        "2026-11-13 14:43:00"
+        "2026-11-13 14:49:00"
       ],
-      "bytes": 92931,
-      "sha256": "83e29b688de2f5cc"
+      "bytes": 93086,
+      "sha256": "d5a50547df7cd5a3"
     },
     {
       "file": "data/paper/equity_daily.csv",
@@ -2904,6 +2904,6 @@
       "sha256": "8298c6c6a21a4ecf"
     }
   ],
-  "total_bytes": 131821234,
-  "total_rows": 5907388
+  "total_bytes": 131821513,
+  "total_rows": 5907421
 }
