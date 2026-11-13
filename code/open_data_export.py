@@ -19,7 +19,9 @@ from __future__ import annotations
 import argparse
 import gzip
 import hashlib
+import io
 import json
+import os
 import shutil
 import sys
 import warnings
@@ -40,12 +42,14 @@ except Exception:
     pass
 
 ROOT = Path(r"D:\AI_Quant_System")
-OUT = ROOT / "public" / "ashare-open-data"
+OUT = Path(os.environ.get("OPEN_DATA_OUT") or (ROOT / "public" / "ashare-open-data"))
 AMOUNT_CAP = 5e11
+PREV: dict[str, dict] = {}
 CODE_FILES = [
     "research_momentum.py", "research_momentum_sweep.py", "research_factor_zoo.py",
     "t0_research.py", "t0_research_gap.py", "t0_research_gap2.py",
     "t0_backtest_v3.py", "t_gap_shadow.py", "daily_review.py", "target_tracker.py",
+    "open_data_export.py", "open_data_github.py",
 ]
 
 
@@ -54,9 +58,32 @@ def conn():
 
 
 def write_csv(df: pd.DataFrame, path: Path) -> None:
+    """固定字节输出：gzip 的 mtime 置 0，排序与小数位由调用方保证。"""
     path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(path, index=False, compression="gzip" if path.suffix == ".gz" else None,
-              float_format="%.4f", encoding="utf-8")
+    if path.suffix == ".gz":
+        with path.open("wb") as raw, gzip.GzipFile(fileobj=raw, mode="wb", mtime=0) as gz, \
+                io.TextIOWrapper(gz, encoding="utf-8", newline="") as txt:
+            df.to_csv(txt, index=False, float_format="%.4f")
+    else:
+        df.to_csv(path, index=False, float_format="%.4f", encoding="utf-8")
+
+
+def clean_daily(df: pd.DataFrame) -> pd.DataFrame:
+    """挡掉两类已知脏数据，宁可少发一天也不发假数据：
+
+    1. 2026-11 出现的整段错误价（000004 等 7 只票的 close 被写成 3000+）；
+    2. 盘中同步中断造成的残缺交易日（2026-11-12 只有 20 行，正常 ~5,966 行）。
+    """
+    from datetime import date as _date
+    df = df[~((df["close"] > 3000) & (df["date"] >= _date(2000, 1, 1)))]
+    cnt = df.groupby("date").size()
+    if len(cnt) > 1:
+        med = cnt.expanding(min_periods=1).median().shift(1)
+        refer = med.fillna(cnt)
+        bad = set(cnt[(refer > 100) & (cnt < 0.3 * refer)].index)
+        if bad:
+            df = df[~df["date"].isin(bad)]
+    return df
 
 
 def export_daily(c) -> list[dict]:
@@ -64,7 +91,14 @@ def export_daily(c) -> list[dict]:
     c.execute("SELECT min(trade_time)::date, max(trade_time)::date FROM price_history "
               "WHERE timeframe='daily' AND symbol ~ '^(60|68|00|30)[0-9]{4}$'")
     d0, d1 = c.fetchone()
+    current_year = datetime.now().year
     for year in range(d0.year, d1.year + 1):
+        rel_year = f"data/daily/{year}.csv.gz"
+        if year < current_year and (OUT / rel_year).exists() and rel_year in PREV:
+            # 历史年份已封版：连数据库都不用再查
+            out.append({"file": rel_year, "rows": PREV[rel_year]["rows"],
+                        "range": PREV[rel_year]["range"]})
+            continue
         df = pd.read_sql("""
             SELECT symbol,
                    trade_time::date AS date,
@@ -84,10 +118,31 @@ def export_daily(c) -> list[dict]:
         df["volume"] = pd.to_numeric(df["volume"], errors="coerce").fillna(0).astype("int64")
         a = pd.to_numeric(df["amount"], errors="coerce")
         df["amount"] = a.where(a <= AMOUNT_CAP).round(2)
-        p = OUT / "data" / "daily" / f"{year}.csv.gz"
-        write_csv(df, p)
-        out.append({"file": f"data/daily/{year}.csv.gz", "rows": len(df),
-                    "range": [str(df["date"].min()), str(df["date"].max())]})
+        df = clean_daily(df)
+        if df.empty:
+            continue
+
+        if year < current_year:
+            write_csv(df, OUT / rel_year)
+            out.append({"file": rel_year, "rows": len(df),
+                        "range": [str(df["date"].min()), str(df["date"].max())]})
+            continue
+
+        d = OUT / "data" / "daily" / str(year)
+        keep = set()
+        for date, g in df.groupby("date", sort=True):
+            name = f"{date}.csv.gz"
+            write_csv(g, d / name)
+            keep.add(name)
+            out.append({"file": f"data/daily/{year}/{name}", "rows": len(g),
+                        "range": [str(date), str(date)]})
+        if d.exists():
+            for f in d.glob("*.csv.gz"):
+                if f.name not in keep:
+                    f.unlink()
+        legacy = OUT / "data" / "daily" / f"{year}.csv.gz"
+        if legacy.exists():
+            legacy.unlink()
     return out
 
 
@@ -100,11 +155,24 @@ def export_minute(c) -> list[dict]:
         """, c.connection)
         if df.empty:
             continue
-        df["ts"] = pd.to_datetime(df["ts"]).dt.strftime("%Y-%m-%d %H:%M:%S")
-        p = OUT / "data" / "minute" / f"{tf}.csv.gz"
-        write_csv(df, p)
-        out.append({"file": f"data/minute/{tf}.csv.gz", "rows": len(df),
-                    "range": [df["ts"].min(), df["ts"].max()]})
+        df["ts"] = pd.to_datetime(df["ts"])
+        df["date"] = df["ts"].dt.strftime("%Y-%m-%d")
+        df["ts"] = df["ts"].dt.strftime("%Y-%m-%d %H:%M:%S")
+        d = OUT / "data" / "minute" / tf
+        keep = set()
+        for date, g in df.groupby("date", sort=True):
+            name = f"{date}.csv.gz"
+            write_csv(g.drop(columns=["date"]), d / name)
+            keep.add(name)
+            out.append({"file": f"data/minute/{tf}/{name}", "rows": len(g),
+                        "range": [g["ts"].min(), g["ts"].max()]})
+        if d.exists():
+            for f in d.glob("*.csv.gz"):
+                if f.name not in keep:
+                    f.unlink()
+        legacy = OUT / "data" / "minute" / f"{tf}.csv.gz"
+        if legacy.exists():
+            legacy.unlink()
     return out
 
 
@@ -238,14 +306,13 @@ def write_readme(files: list[dict], generated: str) -> None:
     txt = f"""# A 股公开数据集 · 实盘（模拟）复盘样本
 
 > 由一套跑在本机的量化系统每日自动导出。**所有交易都是模拟盘**，不涉及真实资金。
-> 生成时间：`{generated}`
 
 ## 里面有什么
 
 | 目录 | 内容 | 规模 |
 |---|---|---|
-| `data/daily/` | A 股日线 OHLCV，按年分文件（主板 / 创业板 / 科创板） | {len(daily)} 个文件、**{rows_daily:,}** 行 |
-| `data/minute/` | 5 分钟与 1 分钟线（近期，持续增长） | {len(minute)} 个文件 |
+| `data/daily/` | A 股日线 OHLCV：历史年份按年打包（不再重写），当年按交易日分文件（每天只增一个） | {len(daily)} 个文件、**{rows_daily:,}** 行 |
+| `data/minute/` | 5 分钟与 1 分钟线，按交易日分文件 | {len(minute)} 个文件 |
 | `data/paper/` | 模拟盘账本：每日净值 {paper['rows'] if paper else 0} 行、成交 {trades['rows'] if trades else 0} 笔、委托全量 |
 | `data/reviews/` | 每个交易日的收盘复盘（Markdown）+ 机器可读索引 |
 | `data/shadow/` | 影子盘前瞻样本：跳空低开候选的逐日记录（**只记录不下单**） |
@@ -254,10 +321,29 @@ def write_readme(files: list[dict], generated: str) -> None:
 
 ## 为什么值得看
 
-- **日线是完整面板**，不是抽样：全部 A 股、逐日、无缺口。
+- **日线是完整面板**，不是抽样：沪深主板 / 创业板 / 科创板全部代码、逐日。
 - **复盘是带结论的**：每天的 Markdown 里有当日成交、持仓、目标核对（月化 / 回撤 / 单笔风险）与实际 PASS/FAIL 判定，亏了也照写。
 - **影子盘是真正的前瞻样本**：信号在记录前就固定了规则，不存在事后拟合。每条样本都同时记录了同窗口全市场中位数收益，可以直接算超额。
 - **研究结论是否定的也公开**：`data/research/` 里包含被证伪的信号（动量、反转、VWAP 回归、开盘突破、低开反转），以及证伪用的统计量。
+
+## 已知边界（先说清楚）
+
+- 价格是**未复权**价，跨除权日会跳变；`adj_factor` 列缺失较多，长周期收益请自行用除权信息复权。
+- 覆盖沪深两市（`60/68/00/30` 开头），**不含北交所**（`8/4` 开头）；退市股覆盖不完整，做历史股票池时要注意幸存者偏差。
+- `amount` 原始字段大面积为空，本数据集用 `volume × close` 估算，超过 5000 亿的脏值已置空。
+- 两类脏数据会被挡在门外：单日覆盖不足近 20 日中枢 30%（盘中同步中断）整天不发；2000 年后 `close > 3000` 的异常行剔除。
+- 模拟盘账本来自本机策略，**不是投资建议**，也不代表任何真实账户。
+
+## 相关项目（开源 A 股数据）
+
+| 项目 | 许可 | 定位 |
+|---|---|---|
+| [akfamily/akshare](https://github.com/akfamily/akshare) | MIT | 覆盖面最广的取数接口库，不带历史落盘 |
+| [rootSunc/CNEquity](https://github.com/rootSunc/CNEquity) | Apache-2.0 | 本地数据湖：86 个数据集、复权与 PIT、保留退市股 |
+| [1nchaos/adata](https://github.com/1nchaos/adata) | Apache-2.0 | 面向量化的免费 A 股数据库 |
+| [mpquant/Ashare](https://github.com/mpquant/Ashare) | 未声明 | 新浪/腾讯双源实时行情，最简 API |
+
+本仓库与它们的区别：**直接给可下载的版本化快照**，不用自己跑采集；代价是只覆盖行情与模拟盘复盘，没有财务、PIT、退市股补全。
 
 ## 数据字典
 
@@ -277,7 +363,12 @@ def write_readme(files: list[dict], generated: str) -> None:
 
     dd = """# 数据字典
 
-## data/daily/YYYY.csv.gz
+## data/daily/
+
+两种分片，列完全相同：
+
+- `data/daily/YYYY.csv.gz`：**历史年份**（完整、不再重写）。
+- `data/daily/YYYY/YYYY-MM-DD.csv.gz`：**当年**，一个交易日一个文件，每天只新增一个。
 
 | 列 | 类型 | 说明 |
 |---|---|---|
@@ -290,7 +381,7 @@ def write_readme(files: list[dict], generated: str) -> None:
 
 > 注意：`close` 为未复权价，跨越除权日会出现价格跳变。做长周期收益计算前需自行复权。
 
-## data/minute/5m.csv.gz | 1m.csv.gz
+## data/minute/5m/YYYY-MM-DD.csv.gz | data/minute/1m/YYYY-MM-DD.csv.gz
 
 | 列 | 说明 |
 |---|---|
@@ -376,6 +467,13 @@ def main() -> int:
 
     OUT.mkdir(parents=True, exist_ok=True)
     generated = datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M:%S %z")
+
+    global PREV
+    try:
+        old = json.loads((OUT / "manifest.json").read_text(encoding="utf-8"))
+        PREV = {f["file"]: f for f in old.get("files", []) if f.get("file")}
+    except Exception:
+        PREV = {}
 
     c = conn().cursor()
     files: list[dict] = []
