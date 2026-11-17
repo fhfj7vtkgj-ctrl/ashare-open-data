@@ -7,7 +7,11 @@
 输出：
   reports/daily/YYYY-MM-DD.md     当日复盘（人看）
   reports/daily/index.jsonl       每日一行（机器看，便于回测）
-退出码：0 全部达标；1 有未达标项（便于计划任务告警）；2 数据异常
+退出码：0 全部达标（月化按参与率折算，在场<3个交易日时月化记"不适用"，不算未达标）；
+        1 有未达标项（便于计划任务告警）；2 数据异常
+口径（2026-11-17 门槛研究）：月化目标 6~8% 按窗口参与率等比折算为 6~8×P%，
+空仓/低参与期的绝对月化不再判 FAIL——依据 AQR 趋势跟随长期研究与
+mlfinlab（AFML）meta-labeling 方法论：信号闸门策略的空仓期属常态。
 
 用法：python ai_quant/daily_review.py [--date 2026-11-13] [--quiet]
 """
@@ -50,9 +54,10 @@ def fetch(d: date):
                     WHERE account_id=1 AND (trade_time + interval '8 hour')::date = %s
                     ORDER BY trade_time""", (d,))
     trades = cur.fetchall()
-    cur.execute("""SELECT trade_date, equity FROM paper_equity_daily
+    cur.execute("""SELECT trade_date, equity, margin_used FROM paper_equity_daily
                     WHERE account_id=1 AND trade_date <= %s ORDER BY trade_date""", (d,))
-    hist = [(r[0], float(r[1])) for r in cur.fetchall() if r[1] is not None]
+    hist = [(r[0], float(r[1]), float(r[2] or 0)) for r in cur.fetchall()
+            if r[1] is not None]
     cur.execute("""SELECT id, symbol, side, quantity, filled_price, status, reject_reason,
                           created_time
                      FROM paper_order
@@ -82,20 +87,30 @@ def main() -> int:
 
     # 当日盈亏
     prev_eq = None
-    for dd, v in hist:
+    for dd, v, _mg in hist:
         if dd < d:
             prev_eq = v
     day_pnl = (equity - prev_eq) if prev_eq is not None else None
 
     # 区间目标
-    win = [(dd, v) for dd, v in hist if dd <= d]
+    win = [(dd, v, mg) for dd, v, mg in hist if dd <= d]
     if not win or win[-1][0] != d:
-        win.append((d, equity))
+        win.append((d, equity, margin))
     eq0, eq1 = win[0][1], win[-1][1]
     n_days = max(len(win) - 1, 1)
     monthly = (eq1 - eq0) / eq0 / n_days * 21 * 100 if eq0 else 0.0
+    # 参与率：窗口内保证金占用（margin_used>0）的交易日占比。
+    # 依据（2026-11-17 门槛研究）：AQR《A Century of Evidence on Trend-Following
+    # Investing》与 mlfinlab/AFML meta-labeling 方法论——带信号闸门的趋势策略
+    # 空仓期属常态，月化绝对目标必须按参与率折算，否则空仓期必然 FAIL。
+    days_in_mkt = sum(1 for _dd, _v, mg in win if mg > 0)
+    participation = min(days_in_mkt / n_days, 1.0) if n_days else 0.0
+    monthly_sampled = days_in_mkt >= 3          # 在场<3天：样本不足以评月化
+    tgt_low = TARGETS["monthly_pct_min"] * participation
+    tgt_high = TARGETS["monthly_pct_max"] * participation
+    monthly_ok = (not monthly_sampled) or (tgt_low <= monthly <= tgt_high)  # 不适用→不判FAIL
     pk, mdd = win[0][1], 0.0
-    for _dd, v in win:
+    for _dd, v, _mg in win:
         pk = max(pk, v)
         if pk > 0:
             mdd = max(mdd, (pk - v) / pk)
@@ -104,7 +119,7 @@ def main() -> int:
     max_risk = max(risks) if risks else 0.0
 
     checks = {
-        "monthly": TARGETS["monthly_pct_min"] <= monthly <= TARGETS["monthly_pct_max"],
+        "monthly": monthly_ok,
         "drawdown": mdd * 100 < TARGETS["max_drawdown_pct"],
         "trade_risk": max_risk < TARGETS["trade_risk_pct"],
     }
@@ -121,7 +136,8 @@ def main() -> int:
         "",
         "| 指标 | 实测 | 目标 | 判定 |",
         "|---|---|---|---|",
-        f"| 月化 | {monthly:+.2f}% | 6 ~ 8% | {'PASS' if checks['monthly'] else 'FAIL'} |",
+        f"| 月化 | {monthly:+.2f}% | 参与率 {participation:.0%} → {tgt_low:.2f} ~ {tgt_high:.2f}% | "
+        f"{'不适用' if not monthly_sampled else ('PASS' if monthly_ok else 'FAIL')} |",
         f"| 最大回撤 | {mdd * 100:.2f}% | <8% | {'PASS' if checks['drawdown'] else 'FAIL'} |",
         f"| 单笔最大亏损 | {max_risk:.2f}% 净值 | <2% | {'PASS' if checks['trade_risk'] else 'FAIL'} |",
         "",

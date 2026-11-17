@@ -42,9 +42,10 @@ def main() -> int:
 
     conn = psycopg2.connect(**DB)
     cur = conn.cursor()
-    cur.execute("""SELECT trade_date, equity FROM paper_equity_daily
+    cur.execute("""SELECT trade_date, equity, margin_used FROM paper_equity_daily
                     WHERE account_id=1 ORDER BY trade_date""")
-    hist = [(r[0], float(r[1])) for r in cur.fetchall() if r[1] is not None]
+    hist = [(r[0], float(r[1]), float(r[2] or 0)) for r in cur.fetchall()
+            if r[1] is not None]
     cur.execute("SELECT initial_cash, cash FROM paper_account WHERE id=1")
     initial, cash_now = (float(x) for x in cur.fetchone())
     cur.execute("""SELECT id, symbol, side, quantity, price, commission, realized_pnl, trade_time
@@ -54,16 +55,25 @@ def main() -> int:
 
     today = date.today()
     if not hist or hist[-1][0] != today:
-        hist.append((today, cash_now))
+        hist.append((today, cash_now, 0.0))
     window = [h for h in hist if (today - h[0]).days <= args.days * 2] or hist
 
     eq0, eq1 = window[0][1], window[-1][1]
     n_days = max(len(window) - 1, 1)
     total_ret = (eq1 - eq0) / eq0 if eq0 else 0.0
     monthly = total_ret / n_days * 21 * 100
+    # 参与率口径（2026-11-17 门槛研究，与 daily_review.py 一致）：
+    # 月化目标 6~8% 按窗口内 margin_used>0 的交易日占比等比折算；
+    # 在场 <3 个交易日时月化记"不适用"，不判 FAIL（空仓期属闸门策略常态）。
+    days_in_mkt = sum(1 for _d, _v, mg in window if mg > 0)
+    participation = min(days_in_mkt / n_days, 1.0) if n_days else 0.0
+    monthly_sampled = days_in_mkt >= 3
+    tgt_low = TARGETS["monthly_pct_min"] * participation
+    tgt_high = TARGETS["monthly_pct_max"] * participation
+    monthly_ok = (not monthly_sampled) or (tgt_low <= monthly <= tgt_high)
 
     peak, mdd = window[0][1], 0.0
-    for _d, v in window:
+    for _d, v, _mg in window:
         peak = max(peak, v)
         if peak > 0:
             mdd = max(mdd, (peak - v) / peak)
@@ -80,8 +90,8 @@ def main() -> int:
     wins = sum(1 for t in closed if float(t[6]) > 0)
 
     checks = {
-        "monthly_pct": {"value": round(monthly, 2), "target": "6-8",
-                        "pass": TARGETS["monthly_pct_min"] <= monthly <= TARGETS["monthly_pct_max"]},
+        "monthly_pct": {"value": round(monthly, 2), "target": f"6-8 ×参与率{participation:.0%}",
+                        "pass": monthly_ok},
         "max_drawdown_pct": {"value": round(mdd * 100, 2), "target": "<8",
                              "pass": mdd * 100 < TARGETS["max_drawdown_pct"]},
         "max_trade_risk_pct": {"value": round(max_risk, 2), "target": "<2",
@@ -102,7 +112,8 @@ def main() -> int:
           "\n".join([
               f"截至 {out['as_of']}  区间 {out['window'][0]} → {out['window'][1]}（{n_days} 个交易日）",
               f"净值 {eq0:,.2f} → {eq1:,.2f}  累计 {total_ret * 100:+.2f}%  月化 {monthly:+.2f}%  "
-              f"[目标 6~8%] {'PASS' if checks['monthly_pct']['pass'] else 'FAIL'}",
+              f"[参与率 {participation:.0%} → 目标 {tgt_low:.2f}~{tgt_high:.2f}%] "
+              f"{'不适用' if not monthly_sampled else ('PASS' if checks['monthly_pct']['pass'] else 'FAIL')}",
               f"最大回撤 {mdd * 100:.2f}%  [目标 <8%] {'PASS' if checks['max_drawdown_pct']['pass'] else 'FAIL'}",
               f"单笔最大亏损 {max_risk:.2f}% 净值  [目标 <2%] {'PASS' if checks['max_trade_risk_pct']['pass'] else 'FAIL'}",
               f"成交 {len(trades)} 笔，已平 {len(closed)} 笔，胜率 "

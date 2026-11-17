@@ -1,5 +1,5 @@
 {
-  "days_recorded": 2,
+  "days_recorded": 3,
   "days_with_signals": 2,
   "signals_total": 66,
   "avg_net_pct": 0.1073,
@@ -9,7 +9,7 @@
   "positive_days": 1,
   "window": [
     "2026-11-13",
-    "2026-11-16"
+    "2026-11-17"
   ],
   "verdict": "样本不足"
 }
