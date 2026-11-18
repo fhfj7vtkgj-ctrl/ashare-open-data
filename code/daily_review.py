@@ -43,7 +43,9 @@ def fetch(d: date):
     cur.execute("""SELECT initial_cash, cash, equity, COALESCE(peak_equity, equity)
                      FROM paper_account WHERE id=1""")
     a = cur.fetchone()
-    cur.execute("SELECT COALESCE(SUM(realized_pnl),0) FROM paper_trade WHERE account_id=1")
+    # 唯一权威账本：paper_cashflow。paper_trade 有历史行缺失，不能再用它推导已实现盈亏。
+    cur.execute("SELECT COALESCE(SUM(amount),0) FROM paper_cashflow "
+                "WHERE account_id=1 AND reason='SETTLE'")
     realized_db = float(cur.fetchone()[0])
     cur.execute("""SELECT symbol, side, quantity, avg_price, current_price, unrealized_pnl
                      FROM paper_position WHERE account_id=1 AND quantity > 0 ORDER BY symbol""")
@@ -109,7 +111,9 @@ def main() -> int:
     tgt_low = TARGETS["monthly_pct_min"] * participation
     tgt_high = TARGETS["monthly_pct_max"] * participation
     monthly_ok = (not monthly_sampled) or (tgt_low <= monthly <= tgt_high)  # 不适用→不判FAIL
-    pk, mdd = win[0][1], 0.0
+    # 峰值必须含 paper_account.peak_equity：equity_daily 只有 2 行时，
+    # 只看窗口会把 6.81% 的回撤读成 0.49%，掩盖 8% 熔断距离。
+    pk, mdd = max(peak, win[0][1]), 0.0
     for _dd, v, _mg in win:
         pk = max(pk, v)
         if pk > 0:
