@@ -140,7 +140,16 @@ def main() -> int:
             "excess_pct": round((gross - cost) / notional * 100 - mkt_ret * 100, 4),
         })
 
-    rec = {"date": str(d), "market_excess_pct": round(mkt_ret * 100, 4),
+    mean_leg_excess = (sum(x["excess_pct"] for x in legs) / len(legs)) if legs else None
+    mean_gross = (sum(x["gross_pct"] for x in legs) / len(legs)) if legs else None
+    mean_cost = (sum(x["cost_pct"] for x in legs) / len(legs)) if legs else None
+    cost_to_gross = (mean_cost / mean_gross) if mean_gross and mean_gross > 0 else None
+    rec = {"date": str(d),
+           "market_benchmark_ret_pct": round(mkt_ret * 100, 4),
+           "mean_excess_pct": round(mean_leg_excess, 4) if mean_leg_excess is not None else None,
+           "mean_gross_pct": round(mean_gross, 4) if mean_gross is not None else None,
+           "mean_cost_pct": round(mean_cost, 4) if mean_cost is not None else None,
+           "cost_to_gross_ratio": round(cost_to_gross, 4) if cost_to_gross is not None else None,
            "liquid_symbols": len(liquid), "skipped": skipped,
            "signals": len(legs), "legs": legs}
 
@@ -183,6 +192,13 @@ def main() -> int:
         "signals_total": len(all_legs),
         "avg_net_pct": round(sum(l["net_pct"] for l in all_legs) / len(all_legs), 4) if all_legs else None,
         "avg_excess_pct": round(sum(l["excess_pct"] for l in all_legs) / len(all_legs), 4) if all_legs else None,
+        "avg_gross_pct": round(sum(l["gross_pct"] for l in all_legs) / len(all_legs), 4) if all_legs else None,
+        "avg_cost_pct": round(sum(l["cost_pct"] for l in all_legs) / len(all_legs), 4) if all_legs else None,
+        "cost_to_gross_ratio": (
+            round((sum(l["cost_pct"] for l in all_legs) / len(all_legs)) /
+                  (sum(l["gross_pct"] for l in all_legs) / len(all_legs)), 4)
+            if all_legs and sum(l["gross_pct"] for l in all_legs) > 0 else None
+        ),
         "day_mean_excess_pct": round(m, 4),
         "t_stat": round(m / (sd / n ** 0.5), 2) if sd and n > 1 else None,
         "positive_days": sum(1 for x in per_day if x > 0),

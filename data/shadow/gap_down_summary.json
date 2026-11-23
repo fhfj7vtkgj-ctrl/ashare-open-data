@@ -1,15 +1,15 @@
 {
-  "days_recorded": 6,
-  "days_with_signals": 5,
-  "signals_total": 191,
-  "avg_net_pct": 0.0353,
-  "avg_excess_pct": -0.2378,
-  "day_mean_excess_pct": -0.3285,
-  "t_stat": -1.29,
+  "days_recorded": 7,
+  "days_with_signals": 6,
+  "signals_total": 211,
+  "avg_net_pct": -0.0088,
+  "avg_excess_pct": -0.2571,
+  "day_mean_excess_pct": -0.3473,
+  "t_stat": -1.67,
   "positive_days": 2,
   "window": [
     "2026-11-13",
-    "2026-11-20"
+    "2026-11-23"
   ],
   "verdict": "样本不足"
 }
