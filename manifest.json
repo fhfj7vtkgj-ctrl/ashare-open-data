@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-25 15:20:01 +0800",
+  "generated_at": "2026-11-26 15:20:01 +0800",
   "files": [
     {
       "file": "data/daily/1991.csv.gz",
@@ -2512,6 +2512,16 @@
       "sha256": "eb6ac2f968bf9d88"
     },
     {
+      "file": "data/daily/2026/2026-11-26.csv.gz",
+      "rows": 5033,
+      "range": [
+        "2026-11-26",
+        "2026-11-26"
+      ],
+      "bytes": 111165,
+      "sha256": "01401dd91cd407f3"
+    },
+    {
       "file": "data/minute/5m/2026-08-26.csv.gz",
       "rows": 1,
       "range": [
@@ -2893,223 +2903,233 @@
     },
     {
       "file": "data/minute/5m/2026-10-27.csv.gz",
-      "rows": 6419,
+      "rows": 6443,
       "range": [
         "2026-10-27 09:35:00",
         "2026-10-27 15:00:00"
       ],
-      "bytes": 128051,
-      "sha256": "4354d4a3418cc20f"
+      "bytes": 128551,
+      "sha256": "d26fc36117a004d5"
     },
     {
       "file": "data/minute/5m/2026-10-28.csv.gz",
-      "rows": 6432,
+      "rows": 6528,
       "range": [
         "2026-10-28 09:35:00",
         "2026-10-28 15:00:00"
       ],
-      "bytes": 128857,
-      "sha256": "70dd9a8850dad146"
+      "bytes": 130671,
+      "sha256": "09a0a2a1b0b1c4ef"
     },
     {
       "file": "data/minute/5m/2026-10-29.csv.gz",
-      "rows": 6436,
+      "rows": 6532,
       "range": [
         "2026-10-29 09:35:00",
         "2026-10-29 15:00:00"
       ],
-      "bytes": 128236,
-      "sha256": "62500d79829475c3"
+      "bytes": 130024,
+      "sha256": "94f03a1b20a58781"
     },
     {
       "file": "data/minute/5m/2026-10-30.csv.gz",
-      "rows": 6440,
+      "rows": 6536,
       "range": [
         "2026-10-30 09:35:00",
         "2026-10-30 15:00:00"
       ],
-      "bytes": 130810,
-      "sha256": "9bf0e4700b994211"
+      "bytes": 132673,
+      "sha256": "e1a3c134d0b25b1f"
     },
     {
       "file": "data/minute/5m/2026-11-02.csv.gz",
-      "rows": 6449,
+      "rows": 6545,
       "range": [
         "2026-11-02 09:35:00",
         "2026-11-02 15:00:00"
       ],
-      "bytes": 130482,
-      "sha256": "8740bfe0daaf3a70"
+      "bytes": 132314,
+      "sha256": "f578d17f4a57f55a"
     },
     {
       "file": "data/minute/5m/2026-11-03.csv.gz",
-      "rows": 6457,
+      "rows": 6553,
       "range": [
         "2026-11-03 09:35:00",
         "2026-11-03 15:00:00"
       ],
-      "bytes": 129889,
-      "sha256": "45198446e3cad304"
+      "bytes": 131705,
+      "sha256": "fda3d8d3866230dc"
     },
     {
       "file": "data/minute/5m/2026-11-04.csv.gz",
-      "rows": 6453,
+      "rows": 6549,
       "range": [
         "2026-11-04 09:35:00",
         "2026-11-04 15:00:00"
       ],
-      "bytes": 132023,
-      "sha256": "3e99b420ba23f872"
+      "bytes": 133914,
+      "sha256": "1e2e98aa28d9d994"
     },
     {
       "file": "data/minute/5m/2026-11-05.csv.gz",
-      "rows": 6483,
+      "rows": 6579,
       "range": [
         "2026-11-05 09:35:00",
         "2026-11-05 15:00:00"
       ],
-      "bytes": 129682,
-      "sha256": "5a73aca6017e4b9a"
+      "bytes": 131534,
+      "sha256": "e9eedd06cd296b1b"
     },
     {
       "file": "data/minute/5m/2026-11-06.csv.gz",
-      "rows": 6428,
+      "rows": 6524,
       "range": [
         "2026-11-06 09:35:00",
         "2026-11-06 15:00:00"
       ],
-      "bytes": 125604,
-      "sha256": "134843547fd0c6f3"
+      "bytes": 127396,
+      "sha256": "7bf58f015526f162"
     },
     {
       "file": "data/minute/5m/2026-11-09.csv.gz",
-      "rows": 6406,
+      "rows": 6502,
       "range": [
         "2026-11-09 09:35:00",
         "2026-11-09 15:00:00"
       ],
-      "bytes": 123574,
-      "sha256": "73f23d47bc6d9869"
+      "bytes": 125287,
+      "sha256": "6d3d017569e2758d"
     },
     {
       "file": "data/minute/5m/2026-11-10.csv.gz",
-      "rows": 6407,
+      "rows": 6503,
       "range": [
         "2026-11-10 09:35:00",
         "2026-11-10 15:00:00"
       ],
-      "bytes": 121679,
-      "sha256": "30a75fe52f113f44"
+      "bytes": 123367,
+      "sha256": "7313069447c76983"
     },
     {
       "file": "data/minute/5m/2026-11-11.csv.gz",
-      "rows": 6423,
+      "rows": 6519,
       "range": [
         "2026-11-11 09:35:00",
         "2026-11-11 15:00:00"
       ],
-      "bytes": 125168,
-      "sha256": "a6993029a55a23a1"
+      "bytes": 126908,
+      "sha256": "4219884281e60236"
     },
     {
       "file": "data/minute/5m/2026-11-12.csv.gz",
-      "rows": 6456,
+      "rows": 6552,
       "range": [
         "2026-11-12 09:35:00",
         "2026-11-12 15:00:00"
       ],
-      "bytes": 128757,
-      "sha256": "b05b3897d40d5a16"
+      "bytes": 130589,
+      "sha256": "9e956a8cbc662569"
     },
     {
       "file": "data/minute/5m/2026-11-13.csv.gz",
-      "rows": 6466,
+      "rows": 6562,
       "range": [
         "2026-11-13 09:35:00",
         "2026-11-13 15:00:00"
       ],
-      "bytes": 128894,
-      "sha256": "6a8a9c596d056581"
+      "bytes": 130680,
+      "sha256": "33ec5cf4353dfb3a"
     },
     {
       "file": "data/minute/5m/2026-11-16.csv.gz",
-      "rows": 6429,
+      "rows": 6525,
       "range": [
         "2026-11-16 09:35:00",
         "2026-11-16 15:00:00"
       ],
-      "bytes": 127481,
-      "sha256": "0dc12084f5478a6a"
+      "bytes": 129273,
+      "sha256": "af568b3cfb40dba8"
     },
     {
       "file": "data/minute/5m/2026-11-17.csv.gz",
-      "rows": 6437,
+      "rows": 6533,
       "range": [
         "2026-11-17 09:35:00",
         "2026-11-17 15:00:00"
       ],
-      "bytes": 127546,
-      "sha256": "5df5fb1f834414b0"
+      "bytes": 129413,
+      "sha256": "933452bca2353cd4"
     },
     {
       "file": "data/minute/5m/2026-11-18.csv.gz",
-      "rows": 6456,
+      "rows": 6552,
       "range": [
         "2026-11-18 09:35:00",
         "2026-11-18 15:00:00"
       ],
-      "bytes": 127634,
-      "sha256": "de41a27d48817c6f"
+      "bytes": 129438,
+      "sha256": "a548239a4459c16e"
     },
     {
       "file": "data/minute/5m/2026-11-19.csv.gz",
-      "rows": 6434,
+      "rows": 6530,
       "range": [
         "2026-11-19 09:35:00",
         "2026-11-19 15:00:00"
       ],
-      "bytes": 125694,
-      "sha256": "2e33651fa5adca7d"
+      "bytes": 127457,
+      "sha256": "3555854801ad8385"
     },
     {
       "file": "data/minute/5m/2026-11-20.csv.gz",
-      "rows": 6439,
+      "rows": 6535,
       "range": [
         "2026-11-20 09:35:00",
         "2026-11-20 15:00:00"
       ],
-      "bytes": 127453,
-      "sha256": "644d29aa75bcb0e6"
+      "bytes": 129303,
+      "sha256": "504810c7180840e0"
     },
     {
       "file": "data/minute/5m/2026-11-23.csv.gz",
-      "rows": 6456,
+      "rows": 6552,
       "range": [
         "2026-11-23 09:35:00",
         "2026-11-23 15:00:00"
       ],
-      "bytes": 131044,
-      "sha256": "ebcefec57ddb8865"
+      "bytes": 132995,
+      "sha256": "1c3284a2e6dfcf01"
     },
     {
       "file": "data/minute/5m/2026-11-24.csv.gz",
-      "rows": 6451,
+      "rows": 6547,
       "range": [
         "2026-11-24 09:35:00",
         "2026-11-24 15:00:00"
       ],
-      "bytes": 127812,
-      "sha256": "66444cc204d72491"
+      "bytes": 129758,
+      "sha256": "b7104f3b0b9c33b9"
     },
     {
       "file": "data/minute/5m/2026-11-25.csv.gz",
-      "rows": 6433,
+      "rows": 6529,
       "range": [
         "2026-11-25 09:35:00",
         "2026-11-25 15:00:00"
       ],
-      "bytes": 127911,
-      "sha256": "9194a0810eb54628"
+      "bytes": 129794,
+      "sha256": "081a315282936a1a"
+    },
+    {
+      "file": "data/minute/5m/2026-11-26.csv.gz",
+      "rows": 6534,
+      "range": [
+        "2026-11-26 09:35:00",
+        "2026-11-26 15:00:00"
+      ],
+      "bytes": 129104,
+      "sha256": "863af7b506ee517c"
     },
     {
       "file": "data/minute/1m/2026-11-09.csv.gz",
@@ -3213,13 +3233,13 @@
     },
     {
       "file": "data/paper/equity_daily.csv",
-      "rows": 10,
+      "rows": 11,
       "range": [
         "2026-11-16",
-        "2026-11-25"
+        "2026-11-26"
       ],
-      "bytes": 551,
-      "sha256": "15243d5d8a79ba7b"
+      "bytes": 600,
+      "sha256": "a09d64557ba8fcaa"
     },
     {
       "file": "data/paper/trades.csv",
@@ -3244,20 +3264,20 @@
     {
       "file": "data/symbols.csv",
       "rows": 7253,
-      "bytes": 163458,
-      "sha256": "e3752037535cb8e9"
+      "bytes": 163453,
+      "sha256": "56d989febc7b010a"
     },
     {
       "file": "data/reviews/",
-      "rows": 9,
+      "rows": 10,
       "bytes": null,
       "sha256": null
     },
     {
       "file": "data/shadow/gap_down.jsonl",
-      "rows": 9,
-      "bytes": 53022,
-      "sha256": "d433440bbcc95549"
+      "rows": 10,
+      "bytes": 75084,
+      "sha256": "91e91acba3adf26b"
     },
     {
       "file": "data/research/factor_zoo_2022_2026.json",
@@ -3316,8 +3336,8 @@
     {
       "file": "code/t_gap_shadow.py",
       "rows": null,
-      "bytes": 8505,
-      "sha256": "0d5c286bc52af6a7"
+      "bytes": 14457,
+      "sha256": "117824af33b1a56c"
     },
     {
       "file": "code/daily_review.py",
@@ -3344,6 +3364,6 @@
       "sha256": "8298c6c6a21a4ecf"
     }
   ],
-  "total_bytes": 135513072,
-  "total_rows": 6142888
+  "total_bytes": 135820162,
+  "total_rows": 6156498
 }
