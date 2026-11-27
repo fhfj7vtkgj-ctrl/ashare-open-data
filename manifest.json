@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-26 15:20:01 +0800",
+  "generated_at": "2026-11-27 15:20:01 +0800",
   "files": [
     {
       "file": "data/daily/1991.csv.gz",
@@ -2522,6 +2522,16 @@
       "sha256": "01401dd91cd407f3"
     },
     {
+      "file": "data/daily/2026/2026-11-27.csv.gz",
+      "rows": 5031,
+      "range": [
+        "2026-11-27",
+        "2026-11-27"
+      ],
+      "bytes": 111594,
+      "sha256": "4f178112734b8e74"
+    },
+    {
       "file": "data/minute/5m/2026-08-26.csv.gz",
       "rows": 1,
       "range": [
@@ -3132,6 +3142,16 @@
       "sha256": "863af7b506ee517c"
     },
     {
+      "file": "data/minute/5m/2026-11-27.csv.gz",
+      "rows": 6584,
+      "range": [
+        "2026-11-27 09:35:00",
+        "2026-11-27 15:00:00"
+      ],
+      "bytes": 134267,
+      "sha256": "165666e4a700d1de"
+    },
+    {
       "file": "data/minute/1m/2026-11-09.csv.gz",
       "rows": 11202,
       "range": [
@@ -3233,13 +3253,13 @@
     },
     {
       "file": "data/paper/equity_daily.csv",
-      "rows": 11,
+      "rows": 12,
       "range": [
         "2026-11-16",
-        "2026-11-26"
+        "2026-11-27"
       ],
-      "bytes": 600,
-      "sha256": "a09d64557ba8fcaa"
+      "bytes": 649,
+      "sha256": "50bfb3791b7be379"
     },
     {
       "file": "data/paper/trades.csv",
@@ -3265,19 +3285,19 @@
       "file": "data/symbols.csv",
       "rows": 7253,
       "bytes": 163453,
-      "sha256": "56d989febc7b010a"
+      "sha256": "aaa95eb12f000f4b"
     },
     {
       "file": "data/reviews/",
-      "rows": 10,
+      "rows": 11,
       "bytes": null,
       "sha256": null
     },
     {
       "file": "data/shadow/gap_down.jsonl",
-      "rows": 10,
-      "bytes": 75084,
-      "sha256": "91e91acba3adf26b"
+      "rows": 11,
+      "bytes": 82346,
+      "sha256": "7375e964aeccc4f1"
     },
     {
       "file": "data/research/factor_zoo_2022_2026.json",
@@ -3364,6 +3384,6 @@
       "sha256": "8298c6c6a21a4ecf"
     }
   ],
-  "total_bytes": 135820162,
-  "total_rows": 6156498
+  "total_bytes": 136073334,
+  "total_rows": 6168116
 }

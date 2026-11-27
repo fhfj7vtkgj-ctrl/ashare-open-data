@@ -1,28 +1,28 @@
 {
-  "days_recorded": 10,
-  "days_with_signals": 8,
-  "signals_total": 270,
-  "avg_net_pct": -0.0087,
-  "avg_excess_pct": -0.1693,
-  "avg_gross_pct": 0.1539,
-  "avg_cost_pct": 0.1626,
-  "avg_stress_cost_pct": 0.2441,
-  "avg_positive_gross_pct": 1.8275,
-  "cost_to_gross_ratio": 0.089,
+  "days_recorded": 11,
+  "days_with_signals": 9,
+  "signals_total": 296,
+  "avg_net_pct": 0.1661,
+  "avg_excess_pct": -0.119,
+  "avg_gross_pct": 0.3301,
+  "avg_cost_pct": 0.164,
+  "avg_stress_cost_pct": 0.2487,
+  "avg_positive_gross_pct": 1.902,
+  "cost_to_gross_ratio": 0.0862,
   "rolling_5d": {
     "days_recorded": 5,
-    "signals": 131,
-    "mean_daily_net_pct": 0.3333,
-    "cost_to_positive_gross_ratio": 0.0745
+    "signals": 105,
+    "mean_daily_net_pct": 0.2823,
+    "cost_to_positive_gross_ratio": 0.1157
   },
   "strategy_status": "RESEARCH_ONLY",
   "hard_gate": "NO_NEW_POSITION_UNLESS_PILOT",
-  "day_mean_excess_pct": -0.2295,
-  "t_stat": -1.44,
-  "positive_days": 3,
+  "day_mean_excess_pct": -0.1591,
+  "t_stat": -1.01,
+  "positive_days": 4,
   "window": [
     "2026-11-13",
-    "2026-11-26"
+    "2026-11-27"
   ],
   "verdict": "RESEARCH_ONLY"
 }
